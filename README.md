@@ -21,10 +21,10 @@ I have two main pseudo LSystems that act as highways for the city.
   #### Drawing Rules
   - Following the paper, [Procedural Modeling of Cities](proceduralCityGeneration.pdf) I created a system of rules to determine road movement and branching.
   - Highway Method: Advance the turtle. For each point we advance to, sample several random points within a certain radius of the current turtle population.  Find the sampled point with the greatest population density, and advance in this direction.
-  ![](road1.png)
+  ![](road1.PNG)
   -Checkered Method : The checkered roads are aligned vertically and horizontally (with some random elements introduced). They have a predetermined width and height of about 0.1 units in the x and y direction, but by using random number functions, they are never an exact checkerboard and experience slight variation in direction, size, and orientation. This ensures intersections also occur at mostly 90 degrees.
-   ![](road2.png)
-    ![](road3.png)
+   ![](road2.PNG)
+    ![](road3.PNG)
   
   #### 2D street layout
   - There exists an overarching sparse layout of several highways, with many smaller roads in between.
@@ -35,8 +35,8 @@ I have two main pseudo LSystems that act as highways for the city.
   For each local road ---> Compare to all line segments making up the highways. Compute the intersections for each, and store the min and max intersection points based on whether the road is horizontal or vertical. If the minimum intersection point occurs where water exists, simply start the road at the water edge instead.
 #### Modifiable features!
 
-![](dense1.png)
-![](dense2.png)
+![](dense1.PNG)
+![](dense2.PNG)
 
 1) Dense City - Click to change the high/low density of local roads. High density includes more street blockes.
 2) Range search - This determines how far the turtle will search for a highly populated area. A higher radius allows the turtle to sample points further away, which can allow it to travel faster to higher density regions.
@@ -49,7 +49,5 @@ Sometimes the intersections or roads generated can be a little wonky with the in
 - Procedural City Generation Paper, cited above
 - Emily's Piazza post about line intersection when generating road networks.
 
-
-![](nyc.png)
 
 
