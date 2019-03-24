@@ -5,27 +5,37 @@ import {gl} from '../globals';
 class Square extends Drawable {
   indices: Uint32Array;
   positions: Float32Array;
-  colors: Float32Array;
-  offsets: Float32Array; // Data for bufTranslate
 
+  p1 : vec4;
+  p2 : vec4;
 
-  constructor() {
-    super(); // Call the constructor of the super class. This is required.
+  constructor(point1 : vec4, point2 : vec4) {
+    super();
+    this.p1 = point1;
+    this.p2 = point2;
   }
 
   create() {
 
   this.indices = new Uint32Array([0, 1, 2,
-                                  0, 2, 3]);
-  this.positions = new Float32Array([-0.5, -0.5, 0, 1,
-                                     0.5, -0.5, 0, 1,
-                                     0.5, 0.5, 0, 1,
-                                     -0.5, 0.5, 0, 1]);
+                                  1, 2, 3]);
+  // this.positions = new Float32Array([-0.05, -0.05, 0.999, 1,
+  //                                    0.05, -0.05, 0.999, 1,
+  //                                    0.05, 0.05, 0.999, 1,
+  //                                    -0.05, 0.05, 0.999, 1]);
+
+  // this.positions = new Float32Array([0.04, 0.57, 0.999, 1, //curr1 1
+  //                                    0.08, 0.57, 0.999, 1, //curr1 2
+  //                                    0.04, -0.3, 0.999, 1,    //curr2 1
+  //                                    0.08, -0.3, 0.999, 1]);  //curr2 2
+
+  this.positions = new Float32Array([this.p1[0], this.p1[1], 0.999, 1, //curr1 1
+                                     this.p1[2], this.p1[3], 0.999, 1, //curr1 2
+                                     this.p2[0], this.p2[1], 0.999, 1,    //curr2 1
+                                     this.p2[2], this.p2[3], 0.999, 1]);  //curr2 2
 
     this.generateIdx();
     this.generatePos();
-    this.generateCol();
-    this.generateTranslate();
 
     this.count = this.indices.length;
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.bufIdx);
@@ -34,17 +44,9 @@ class Square extends Drawable {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.bufPos);
     gl.bufferData(gl.ARRAY_BUFFER, this.positions, gl.STATIC_DRAW);
 
-    console.log(`Created square`);
-  }
+    this.numInstances = 1;
 
-  setInstanceVBOs(offsets: Float32Array, colors: Float32Array) {
-    this.colors = colors;
-    this.offsets = offsets;
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufCol);
-    gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTranslate);
-    gl.bufferData(gl.ARRAY_BUFFER, this.offsets, gl.STATIC_DRAW);
+    //console.log(`Created Square`);
   }
 };
 
