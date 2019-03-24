@@ -51,5 +51,7 @@ Sometimes the intersections or roads generated can be a little wonky with the in
 - Procedural City Generation Paper, cited above
 - Emily's Piazza post about line intersection when generating road networks.
 
+https://www.youtube.com/watch?v=Nt3pm0VJDXg
+
 
 
