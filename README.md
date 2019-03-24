@@ -1,56 +1,53 @@
 # Homework 5: Road Generation
 
-For this assignment, you will generate a network of roads to form the basis of a city using a modified version of L-systems. As in homework 4, you will be using instanced rendering to draw your road networks.
-
-## Base Code
-We have provided the same code that came with homework 4, but you will likely want to use most of your code from that assignment. Feel free to copy over as much of your homework 4 implementation as you want. We have also provided [Procedural Modeling of Cities](proceduralCityGeneration.pdf), a brief technical paper describing techniques for generating road networks. Refer to this as you implement the sections below.
+Morgan Herrmann
+moher@seas.upenn.edu
 
 ## Assignment Requirements
-- __(10 points)__ Use whatever noise functions suit you to generate 2D map data of the following information, and set up GUI toggles to render each map on a 2D screen quadrangle. The user should have the option to view both overlaid on each other.
-  - Terrain elevation, setting anything below a certain height to water. Higher elevation should be lighter in color. Include an option to display a simple land versus water view.
-  - Population density. Denser population should be lighter in color.
-- __(20 points)__ Create a set of classes to represent a pseudo L-system; you will still have a Turtle to track your drawing state, but you will expand your road network based on the Turtle's current environment as it moves and draws. You won't be tracking a grammar as a set of characters, but you will keep a set of rules to determine how to advance your Turtle.
-  - Your Turtle will begin from a random point in the bounds of your screen.
-  - Depending on the type of road network being generated (see next section) your Turtle will move forward and draw some sort of road in its wake.
-  - Each time the Turtle completes a road segment, it will evaluate whether it should branch to create more roads in different directions (same idea as the push and pop of Turtle state). This is where your expansion rules come in; the Turtle must decide how it will branch (if at all).
-  - Store your roads as sets of edges and intersections so that you can more easily make roads connect to one another as described in section 3.3.1 of Procedural Modeling of Cities
-- __(20 points)__ Create distinct rule sets for drawing roads that obey the following layouts (refer to figure 5 in [Procedural Modeling of Cities](proceduralCityGeneration.pdf) for illustrations):
-  - Basic road branching: The main roads follow population density as a metric for directional bias
-  - Checkered road networking: The roads are aligned with some global directional vector and have a maximum block width and length. Intersections are all roughly 90 degrees.
-- __(30 points)__ Using the components you created in the previous sections, generate the 2D street layout of a city with the following features:
-  - An overarching sparse layout of highway roads that are thicker than other roads
-  - Within the highway outline, denser clusters of smaller roads with less visual line thickness than the highways
-  - Inclusion of both road branching methods
-  - Only highways are allowed to cross water
-  - Roads are self-sensitive, as described in section 3.3.1 of Procedural Modeling of Cities
 
-- __(10 points)__ Using dat.GUI, make at least three aspects of your program interactive, such as:
-  - Terrain shape
-  - Population density
-  - Highway density
-  - Random seed used for the RNG basis of road branching
+#### 2D MAP
+For the 2D map, I used a comination of FBM and worley noise to generate population density with a mixture of land and water terrain. In order to determine which portions of the screen were water, I simply set any noise calculation below a certain threshold to be water. The population density is shown as lighter patches of noise, where the lightest spots represent the highest population density. I set elevation to be represented by darker color, just to avoid confusion between the two.
+The user can toggle the option to display the terrain, and can toggle the option to display the population density on the map.
 
-- __(10 points)__ Following the specifications listed
-[here](https://github.com/pjcozzi/Articles/blob/master/CIS565/GitHubRepo/README.md),
-create your own README.md, renaming the file you are presently reading to
-INSTRUCTIONS.md. Don't worry about discussing runtime optimization for this
-project. Make sure your README contains the following information:
-    - Your name and PennKey
-    - Citation of any external resources you found helpful when implementing this
-    assignment.
-    - A link to your live github.io demo (refer to the pinned Piazza post on
-      how to make a live demo through github.io)
-    - An explanation of the techniques you used to generate your L-System features.
-    Please be as detailed as you can; not only will this help you explain your work
-    to recruiters, but it helps us understand your project when we grade it!
+#### Pseudo L System
 
-## Expected visual output
-The results of your road generation need only be simple 2D images, like the ones in Procedural Modeling of Cities. You may make 3D terrain with overlaid roads if you want, but for this assignment it's not necessary.
+I have two main pseudo LSystems that act as highways for the city.  
+  - They begin from pseudo-random points on the land, within the bounds of the screen, avoiding starting in water.
+  - In order to advance the turtle for each system, the turtle samples several random points within a reasonable threshhold distance.  Of these points, the turtle travels in the direction of the sampled point with the highest population.
+  - When a road segment is finished generating, the turtle takes into account a random branching threshhold.  Again, nearby points are sampled to determine the spot with the highest population.  If the population is high enough, or past a certain threshhold value, the turtle will branch in this direction as well.
+  -Each Edge/intersection is stored as a set of x/y coordinate pairs.  I store multiple sets of vec4[], where they are of the format (x1, y1, x2, y2). This is helpful for later calculations for intersections. (For more explanation of intersection awareness, see the 2D street layout section).  There are both highways and more grid like city streets that fill the interior of the highways.
+  -In order to draw the edges, I created a rectangle Drawable that takes in two vec4s, and draws a shape connecting all 4 points.  This made drawing the road segments much easier to compute based on lines, and also gave more control over the line thickness.
+  
+  #### Drawing Rules
+  - Following the paper, [Procedural Modeling of Cities](proceduralCityGeneration.pdf) I created a system of rules to determine road movement and branching.
+  - Highway Method: Advance the turtle. For each point we advance to, sample several random points within a certain radius of the current turtle population.  Find the sampled point with the greatest population density, and advance in this direction.
+  ![](road1.PNG)
+  -Checkered Method : The checkered roads are aligned vertically and horizontally (with some random elements introduced). They have a predetermined width and height of about 0.1 units in the x and y direction, but by using random number functions, they are never an exact checkerboard and experience slight variation in direction, size, and orientation. This ensures intersections also occur at mostly 90 degrees.
+   ![](road2.PNG)
+    ![](road3.PNG)
+  
+  #### 2D street layout
+  - There exists an overarching sparse layout of several highways, with many smaller roads in between.
+  - The interior roads are less thick visually. I implemented this by determining first what kind of road the segment was, then passing the appropriate thickness as a parameter to my Square.ts, which will draw a proper rectangle segment.
+  - Both checkered and highway layouts were used. 
+  - Crossing water: Note that only the thicker highways will cross water.  The local roads have the option to extend as far as they wish, until they intersect water or a highway, in which case, they end.  This prevents local streets from extending over the water (yikes!).
+  - SELF SENSITIVE ROADS - For this implementation, I first took into account the set of line segments within the highways.  For each local road, I computed it's minimum and maximum intersection with each of the highways. For each road, it would extend from water until it hit a highway, or be cut off between highways if it was encased between them.
+  For each local road ---> Compare to all line segments making up the highways. Compute the intersections for each, and store the min and max intersection points based on whether the road is horizontal or vertical. If the minimum intersection point occurs where water exists, simply start the road at the water edge instead.
+#### Modifiable features!
 
-![](nyc.png)
+![](dense1.PNG)
+![](dense2.PNG)
 
-## Extra Credit (Up to 20 points)
-- Implement additional road layouts as described in Procedural Modeling of Cities
-  - Radial road networking: The main roads follow radial tracks around some predefined centerpoint
-  - Elevation road networking: Roads follow paths of least elevation change
-- Add any polish features you'd like to make your visual output more interesting
+1) Dense City - Click to change the high/low density of local roads. High density includes more street blockes.
+2) Range search - This determines how far the turtle will search for a highly populated area. A higher radius allows the turtle to sample points further away, which can allow it to travel faster to higher density regions.
+3) Branching probability - This slider increases/decreses the likelihood of branching within the turtle.  Less branching results in generally straighter roads with less extensions or branches, and uses a random seed to determine when to branch. 
+
+#### Improvements / Notes
+Sometimes the intersections or roads generated can be a little wonky with the intersections, so please refresh the page if the initial result is not so perfect! SOme intersections calculations are a slight bit off, so refreshing and rebuilding the gnetwork tends to help.
+
+##### Citations, etc
+- Procedural City Generation Paper, cited above
+- Emily's Piazza post about line intersection when generating road networks.
+
+
+
